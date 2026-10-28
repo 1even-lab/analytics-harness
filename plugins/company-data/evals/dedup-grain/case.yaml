@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: dedup-grain
+description: A measure on a coarser grain is not sliced below that grain
+tags: [metrics]
+execution:
+  max_turns: 15
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: "Show the marketing budget by day for September 2026."
+graders:
+  - name: skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?metrics-catalog"'
+    min: 1
+    weight: 1

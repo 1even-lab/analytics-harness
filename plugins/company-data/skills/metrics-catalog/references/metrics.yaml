@@ -1,0 +1,100 @@
+# <Company> metric specs - the single source of formulas for agents.
+# Format and compilation into SQL - spec-format.md. A formula change = a PR with review.
+version: 1
+
+tables:
+  mart.casino_rounds:
+    where: ["is_test = 0"]
+  mart.player_daily:
+    where: ["is_test = 0"]
+  mart.campaign_daily:
+    where: []
+
+metrics:
+  # ── mart.casino_rounds - one row per game round ──
+  ggr:
+    title: "$ GGR"
+    description: "Gross gaming revenue of settled casino rounds: bets minus wins, in USD."
+    table: mart.casino_rounds
+    time_column: round_date
+    unit: USD
+    expression: "round(sum(bet_usd) - sum(win_usd), 2)"
+    dims: &round_dims
+      date: round_date
+      country: country
+      platform: platform
+      game: game_name
+      provider: provider
+    where: ["status = 'settled'"]
+    caveat: "Jackpot wins are loaded from <YYYY-MM-DD>; before that date GGR is overstated."
+    owner: "<team>"
+
+  rounds_count:
+    title: "# Rounds"
+    description: "Number of settled casino rounds."
+    table: mart.casino_rounds
+    time_column: round_date
+    unit: count
+    expression: "count(DISTINCT round_id)"
+    dims: *round_dims
+    where: ["status = 'settled'"]
+    owner: "<team>"
+
+  avg_bet:
+    title: "$ Avg Bet"
+    description: "Average stake per settled round."
+    table: mart.casino_rounds
+    time_column: round_date
+    unit: USD
+    expression: "round(sum(bet_usd) / nullif(count(DISTINCT round_id), 0), 2)"
+    dims: *round_dims
+    where: ["status = 'settled'"]
+    caveat: "An average: not summed or averaged across rows, recomputed for every slice."
+    owner: "<team>"
+
+  # ── mart.player_daily - one row per player per day ──
+  active_players:
+    title: "# Active Players"
+    description: "Unique players with at least one real-money round in the period."
+    table: mart.player_daily
+    time_column: event_date
+    unit: users
+    expression: "count(DISTINCT player_id)"
+    dims: &player_dims
+      date: event_date
+      country: country
+      platform: platform
+    where: ["rounds > 0"]
+    caveat: "Non-additive: the weekly value is not the sum of daily values."
+    owner: "<team>"
+
+  depositor_rate:
+    title: "% Depositor Rate"
+    description: "Share of active players who made at least one deposit in the period."
+    table: mart.player_daily
+    time_column: event_date
+    unit: pct
+    expression: "round(count(DISTINCT CASE WHEN deposits > 0 THEN player_id END) * 100.0 / nullif(count(DISTINCT player_id), 0), 2)"
+    dims: *player_dims
+    where: ["rounds > 0"]
+    caveat: "A ratio: recomputed for every window and slice, never summed."
+    owner: "<team>"
+
+  # ── mart.campaign_daily - campaign × day; the budget repeats on every day ──
+  marketing_budget:
+    title: "$ Marketing Budget"
+    description: "Planned budget of acquisition campaigns active in the period."
+    table: mart.campaign_daily
+    time_column: event_date
+    unit: USD
+    expression: "round(sum(budget_usd), 2)"
+    dims:
+      campaign: campaign_id
+      month: month
+      channel: channel
+    dedup:
+      by: [campaign_id, month]
+      measure:
+        budget_usd: once
+    caveat: "The budget is monthly: a daily breakdown is meaningless and is refused."
+    owner: "<team>"

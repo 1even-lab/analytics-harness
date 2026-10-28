@@ -1,0 +1,23 @@
+schema_version: "1.1"
+name: dim-not-allowed
+description: A breakdown missing from the metric's dims is not substituted on the agent's own initiative
+tags: [metrics]
+execution:
+  max_turns: 15
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: "Show GGR by acquisition channel for September 2026."
+graders:
+  - name: skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?metrics-catalog"'
+    min: 1
+    weight: 1
+  - name: no-channel-groupby
+    type: regex
+    target: last_message
+    pattern: 'GROUP\s+BY[^;\n]*\bchannel\b'
+    flags: i
+    match: not_contains
+    weight: 1

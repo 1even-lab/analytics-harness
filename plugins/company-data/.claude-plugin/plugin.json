@@ -1,0 +1,9 @@
+{
+  "name": "company-data",
+  "version": "0.1.0",
+  "description": "Entry point for company data work: where rules and data come from, how to compute metrics from specs, and how to present results.",
+  "author": {
+    "name": "<Org Name>"
+  },
+  "keywords": ["data", "analytics", "metrics", "dwh"]
+}

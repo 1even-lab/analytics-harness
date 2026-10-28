@@ -1,0 +1,53 @@
+# Golden set: typical analyst questions with a reference answer.
+# Run manually or on a schedule with a REAL warehouse connector
+# (unlike the evals/* cases, which run without data). The reference is fixed
+# once, after reconciliation with BI and sign-off by the metric owner; from then on
+# any discrepancy is a regression in a skill, a spec or the data.
+#
+# Fields:
+#   question      - verbatim, as a user would ask it
+#   metric        - spec key from metrics.yaml
+#   period        - [start, end) - a closed period, so the reference doesn't drift
+#   dims          - expected breakdown ([] - total)
+#   sql_must      - fragments that must appear in the agent's SQL
+#   expected      - reference value (total) or path to a CSV with reference rows
+#   tolerance_pct - allowed discrepancy, usually 0 for sums
+#   signed_off    - who confirmed the reference and when
+
+version: 1
+questions:
+  - question: "What was GGR in August 2026?"
+    metric: ggr
+    period: ["2026-08-01", "2026-09-01"]
+    dims: []
+    sql_must: ["is_test = 0", "status = 'settled'"]
+    expected: <number from BI after reconciliation>
+    tolerance_pct: 0
+    signed_off: "<owner>, <YYYY-MM-DD>"
+
+  - question: "GGR by country for August 2026"
+    metric: ggr
+    period: ["2026-08-01", "2026-09-01"]
+    dims: [country]
+    sql_must: ["is_test = 0", "status = 'settled'", "GROUP BY country"]
+    expected: golden/expected/ggr_by_country_2026_08.csv
+    tolerance_pct: 0
+    signed_off: "<owner>, <YYYY-MM-DD>"
+
+  - question: "How many active players were there in the first week of September 2026?"
+    metric: active_players
+    period: ["2026-09-01", "2026-09-08"]
+    dims: []
+    sql_must: ["count(DISTINCT player_id)", "rounds > 0"]
+    expected: <number>
+    tolerance_pct: 0
+    signed_off: "<owner>, <YYYY-MM-DD>"
+
+  - question: "Depositor rate for August 2026 by platform"
+    metric: depositor_rate
+    period: ["2026-08-01", "2026-09-01"]
+    dims: [platform]
+    sql_must: ["nullif(count(DISTINCT player_id), 0)"]
+    expected: golden/expected/depositor_rate_by_platform_2026_08.csv
+    tolerance_pct: 0.1
+    signed_off: "<owner>, <YYYY-MM-DD>"

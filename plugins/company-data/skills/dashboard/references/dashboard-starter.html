@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard - <Company></title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<style>
+/* Brand tokens: replace the values with yours, keep the names - the skill refers to them. */
+:root{
+  --bg:#0F1115; --surface:#191C22; --well:#14171C; --border:#2A2F38;
+  --text:#F1F3F6; --muted:#8A92A0;
+  --accent:#4FD1C5;      /* THE ONLY accent */
+  --series-2:#A0A7F0;    /* second series inside a chart only */
+  --head:system-ui,sans-serif; --body:system-ui,sans-serif; --mono:ui-monospace,monospace;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--body)}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 16px 56px}
+h1{font-family:var(--head);font-weight:700;font-size:34px;line-height:1.15;margin:0 0 8px}
+h2{font-family:var(--head);font-weight:700;font-size:20px;margin:0 0 14px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+.lede{color:var(--muted);max-width:70ch;margin:0 0 28px}
+.grid{display:grid;gap:20px;margin-bottom:20px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.g2,.g4{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;min-width:0}
+.stat__num{display:block;font-family:var(--head);font-weight:700;font-size:32px;line-height:1;color:var(--accent)}
+.stat__label{display:block;margin-top:10px}
+.stat__sub{display:block;margin-top:6px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.up{color:var(--accent)} .down{color:var(--muted)}
+.chart{position:relative;height:260px}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0 16px 10px 0}
+td{border-top:1px solid var(--border);padding:12px 16px 12px 0}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.notes dl{display:grid;grid-template-columns:max-content 1fr;gap:8px 24px;margin:0}
+.notes dt{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.notes dd{margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Report · <period></p>
+  <h1><A short statement of the main finding></h1>
+  <p class="lede"><One or two sentences of context.></p>
+
+  <section class="grid g4">
+    <div class="card"><span class="stat__num">$1.2M</span><span class="stat__label">$ GGR</span><span class="stat__sub"><span class="up">▲ 4.1%</span> vs previous period</span></div>
+    <div class="card"><span class="stat__num">18.4K</span><span class="stat__label"># Active Players</span><span class="stat__sub"><span class="down">▼ 1.2%</span> vs previous period</span></div>
+    <div class="card"><span class="stat__num">$0.84</span><span class="stat__label">$ Avg Bet</span><span class="stat__sub">—</span></div>
+    <div class="card"><span class="stat__num">41.2%</span><span class="stat__label">% Depositor Rate</span><span class="stat__sub">—</span></div>
+  </section>
+
+  <section class="grid g2">
+    <div class="card"><h2>Daily GGR</h2><div class="chart"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h2>GGR by country</h2><div class="chart"><canvas id="c2"></canvas></div></div>
+  </section>
+
+  <section class="card notes">
+    <h2>Source and caveats</h2>
+    <dl>
+      <dt>Metrics</dt><dd>$ GGR, # Active Players, $ Avg Bet, % Depositor Rate</dd>
+      <dt>Period</dt><dd><YYYY-MM-DD> – <YYYY-MM-DD>, compared with the previous window of equal length</dd>
+      <dt>Data through</dt><dd><YYYY-MM-DD></dd>
+      <dt>Caveats</dt><dd><metric caveats>. Mandatory methodology adjustments applied.</dd>
+    </dl>
+  </section>
+</div>
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+Chart.defaults.color = css('--muted');
+Chart.defaults.borderColor = css('--border');
+Chart.defaults.font.family = css('--body');
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+
+// Data comes from catalog computations; at most two series per chart.
+const days = ['01', '02', '03', '04', '05', '06', '07'];
+new Chart(document.getElementById('c1'), {
+  type: 'line',
+  data: { labels: days, datasets: [
+    { label: 'Current period', data: [120, 132, 128, 141, 150, 147, 160], borderColor: css('--accent'), pointRadius: 0, tension: .3 },
+    { label: 'Previous period', data: [118, 121, 125, 130, 138, 136, 142], borderColor: css('--series-2'), pointRadius: 0, tension: .3 }
+  ]},
+  options: { maintainAspectRatio: false, interaction: { mode: 'index', intersect: false } }
+});
+new Chart(document.getElementById('c2'), {
+  type: 'bar',
+  data: { labels: ['A', 'B', 'C', 'D', 'E'], datasets: [
+    { label: '$ GGR', data: [420, 310, 220, 150, 90], backgroundColor: css('--accent'), borderRadius: 4 }
+  ]},
+  options: { maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
+});
+</script>
+</body>
+</html>

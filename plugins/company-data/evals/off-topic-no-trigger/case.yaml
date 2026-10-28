@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: off-topic-no-trigger
+description: Data skills don't fire on questions that aren't about data
+tags: [triggering]
+execution:
+  max_turns: 15
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: "Write a Python function that reverses a string."
+graders:
+  - name: no-data-skill
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?(data-router|basic-analytics|warehouse-mart|metrics-catalog|dashboard|bi-reporting)"'
+    min: 0
+    max: 0
+    arm: both
+    weight: 1

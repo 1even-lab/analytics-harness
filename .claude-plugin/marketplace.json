@@ -1,0 +1,16 @@
+{
+  "name": "company-plugins",
+  "owner": {
+    "name": "<Org Name>"
+  },
+  "metadata": {
+    "description": "Company data plugins: metrics, reports, dashboards, BI"
+  },
+  "plugins": [
+    {
+      "name": "company-data",
+      "source": "./plugins/company-data",
+      "description": "Working with company data: metrics, reports, dashboards, BI"
+    }
+  ]
+}

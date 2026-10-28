@@ -1,0 +1,65 @@
+schema_version: "1.1"
+name: mandatory-filters
+description: SQL for a catalog metric contains all mandatory filters, the window and the breakdown
+tags: [metrics, sql]
+execution:
+  max_turns: 15
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: "Prepare SQL: GGR by country for August 2026. I will run it myself."
+graders:
+  - name: skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?metrics-catalog"'
+    min: 1
+    weight: 1
+  - name: filter-test
+    type: regex
+    target: last_message
+    pattern: 'is_test\s*=\s*0'
+    flags: i
+    match: contains
+    weight: 1
+  - name: filter-status
+    type: regex
+    target: last_message
+    pattern: 'status\s*=\s*.settled.'
+    flags: i
+    match: contains
+    weight: 1
+  - name: window-start
+    type: regex
+    target: last_message
+    pattern: 'round_date\s*>=\s*.2026-08-01.'
+    flags: i
+    match: contains
+    weight: 1
+  - name: window-end
+    type: regex
+    target: last_message
+    pattern: 'round_date\s*<\s*.2026-09-01.'
+    flags: i
+    match: contains
+    weight: 1
+  - name: group-by-country
+    type: regex
+    target: last_message
+    pattern: 'GROUP\s+BY\s+country'
+    flags: i
+    match: contains
+    weight: 1
+  - name: expression
+    type: regex
+    target: last_message
+    pattern: 'sum\(\s*bet_usd\s*\)\s*-\s*sum\(\s*win_usd\s*\)'
+    flags: i
+    match: contains
+    weight: 1
+  - name: no-select-star
+    type: regex
+    target: last_message
+    pattern: 'SELECT\s+\*'
+    flags: i
+    match: not_contains
+    weight: 1
