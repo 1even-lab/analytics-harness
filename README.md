@@ -9,6 +9,9 @@ Everything in angle brackets (`<...>`) is a placeholder. Examples use a hypothet
 `mart.*` layer - casino rounds, player days, sportsbook bets, marketing campaigns; replace the
 dialect, tables and metrics with your own.
 
+The reasoning behind the layout is in [docs/DESIGN.md](docs/DESIGN.md): the problems the harness
+answers, its two principles and which layer owns what.
+
 ## What's inside
 
 ```
@@ -114,3 +117,7 @@ examples, datasource ids, the HTML scaffold. Rule of thumb - `SKILL.md` under ~1
   agent copies SQL examples from skills verbatim, so a broken example spreads into every report.
 - `COMMENT`s on mart tables and columns are part of the harness: `warehouse-mart` doesn't work
   without them.
+
+## Licence and author
+
+MIT, see [LICENSE](LICENSE). Written by Max Ivanov, 1even.lab.
