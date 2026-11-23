@@ -20,10 +20,12 @@ import re
 import sys
 
 READ_STARTS = ("SELECT", "WITH", "SHOW", "DESCRIBE", "DESC", "EXPLAIN", "EXISTS")
+# Words that turn a read into a write anywhere in the statement. SYSTEM / KILL / SET / USE
+# are statements of their own and are already refused by READ_STARTS; scanning for them in
+# the body only refused reads of system.* tables as "writes".
 WRITE_WORDS = (
     "INSERT", "ALTER", "DROP", "CREATE", "TRUNCATE", "DELETE", "UPDATE", "RENAME",
-    "GRANT", "REVOKE", "OPTIMIZE", "SYSTEM", "KILL", "ATTACH", "DETACH", "EXCHANGE",
-    "UNDROP", "SET", "USE",
+    "GRANT", "REVOKE", "OPTIMIZE", "ATTACH", "DETACH", "EXCHANGE", "UNDROP",
 )
 _COMMENTS = re.compile(r"--[^\n]*|/\*.*?\*/", re.S)
 _QUOTED = re.compile(r"'(?:[^'\\]|\\.)*'|`[^`]*`|\"[^\"]*\"", re.S)
