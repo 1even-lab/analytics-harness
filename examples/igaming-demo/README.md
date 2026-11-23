@@ -19,7 +19,7 @@ plugin/                    the template, filled in - install it like any plugin
     data-router/           what is connected → where rules and data come from
     metrics-catalog/       references/metrics.yaml - 12 metrics with the table filters
     warehouse-mart/        hand-written SQL on the `demo` database
-    gaming-activity-analysis/  the casino table: mandatory adjustments, example queries
+    gaming-activity-analysis/  the casino table: the exclusion, provider pitfalls, example queries
     basic-analytics/       how to present an answer
     dashboard/             one-off HTML dashboards
   evals/                   behavioural cases for the traps + a golden set
@@ -29,16 +29,15 @@ with-platform/             the same metrics and rules for an agent platform's me
 ## The data and its traps
 
 `demo.gaming_activity` - one row per player per day per game, casino only: brand, project
-code, player, geo, game, provider, aggregator, game type, and money in USD as two families -
-with bonus money (`casino_*_usd`) and real money only (`casino_*_real_usd`).
+code, player, geo, game, provider, aggregator, game type, and money in USD (handle,
+payouts, GGR).
 `demo.daily` - one row per brand per day across products; its casino GGR is already adjusted.
 
-Four traps the plugin has to handle, and a chat without it does not:
+Three traps the plugin has to handle, and a chat without it does not:
 
-1. One project reports only real-money columns: its standard GGR, handle and payouts are NULL.
-2. One project must be excluded from the casino table entirely.
-3. The provider field is not 1:1 with the game (aliases, an aggregator's name).
-4. One brand has days with no rows at all.
+1. One project must be excluded from the casino table entirely.
+2. The provider field is not 1:1 with the game (aliases, an aggregator's name).
+3. One brand has days with no rows at all.
 
 ## Running it
 

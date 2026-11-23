@@ -66,7 +66,7 @@ Spec `ggr_games` from `metrics.yaml`, question: "GGR by brand for August".
 ```sql
 SELECT
     company AS brand
-    , round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)), 2) AS ggr_games
+    , round(sum(casino_ggr_usd), 2) AS ggr_games
 FROM demo.gaming_activity
 WHERE date >= '2026-08-01'
   AND date <  '2026-09-01'

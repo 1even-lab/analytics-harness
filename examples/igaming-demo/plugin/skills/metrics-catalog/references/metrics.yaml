@@ -12,15 +12,13 @@ tables:
 
 metrics:
   # ── demo.gaming_activity - one row per player per day per game ──
-  # Project 170 has only the real-money columns filled (gaming-activity-analysis, rule 1):
-  # every money expression substitutes them.
   ggr_games:
     title: "$ GGR"
     description: "Casino GGR = bets - wins, USD. Game grain, casino only."
     table: demo.gaming_activity
     time_column: date
     unit: USD
-    expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)), 2)"
+    expression: "round(sum(casino_ggr_usd), 2)"
     dims: &ga_dims
       date: date
       brand: company
@@ -30,7 +28,7 @@ metrics:
       is_vip: is_vip
       game: game_name
       game_type: game_type
-      provider: game_provider_full_name
+      provider: game_provider
     where: []
     caveat: "Casino only; cross-product totals come from demo.daily. By provider the numbers are approximate: the provider field is not 1:1 with the game."
     owner: "demo"
@@ -41,7 +39,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: USD
-    expression: "round(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 2)"
+    expression: "round(sum(casino_bet_amount_usd), 2)"
     dims: *ga_dims
     where: []
     caveat: "This is money, not the number of bets: one brand reports no bet counter at all."
@@ -53,7 +51,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: USD
-    expression: "round(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd)), 2)"
+    expression: "round(sum(casino_win_amount_usd), 2)"
     dims: *ga_dims
     where: []
     owner: "demo"
@@ -64,7 +62,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: pct
-    expression: "round(toFloat64(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd))) / nullIf(toFloat64(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd))), 0) * 100, 2)"
+    expression: "round(toFloat64(sum(casino_ggr_usd)) / nullIf(toFloat64(sum(casino_bet_amount_usd)), 0) * 100, 2)"
     dims: *ga_dims
     where: []
     caveat: "A ratio: never summed or averaged across days or rows; a period comparison is two computations."
@@ -76,7 +74,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: pct
-    expression: "round(toFloat64(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd))) / nullIf(toFloat64(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd))), 0) * 100, 2)"
+    expression: "round(toFloat64(sum(casino_win_amount_usd)) / nullIf(toFloat64(sum(casino_bet_amount_usd)), 0) * 100, 2)"
     dims: *ga_dims
     where: []
     caveat: "A ratio: never summed or averaged across days or rows; a period comparison is two computations."
@@ -88,7 +86,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: users
-    expression: "uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0)"
+    expression: "uniqExactIf(user_id, casino_bet_amount_usd > 0)"
     dims: *ga_dims
     where: []
     caveat: "Not additive: a week is not the sum of its days. Activity is taken from handle, not from the bet counter."
@@ -100,7 +98,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: USD
-    expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)) / nullIf(uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0), 0), 2)"
+    expression: "round(sum(casino_ggr_usd) / nullIf(uniqExactIf(user_id, casino_bet_amount_usd > 0), 0), 2)"
     dims:
       date: date
       brand: company
@@ -112,7 +110,7 @@ metrics:
   # ── demo.daily - one row per brand per day, all products ──
   casino_ggr:
     title: "$ Casino GGR (daily)"
-    description: "Casino GGR from the daily P&L, USD; adjustments already applied. Must match $ GGR for the same brands and dates."
+    description: "Casino GGR from the daily P&L, USD; the excluded project already left out. Must match $ GGR for the same brands and dates."
     table: demo.daily
     time_column: date
     unit: USD

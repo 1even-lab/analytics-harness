@@ -24,7 +24,7 @@ graders:
   - name: provider-not-a-key
     type: regex
     target: last_message
-    pattern: "GROUP\\s+BY[^\\n]*game_provider_full_name"
+    pattern: "GROUP\\s+BY[^\\n]*game_provider"
     flags: i
     match: not_contains
     weight: 2

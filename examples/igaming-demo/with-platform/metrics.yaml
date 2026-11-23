@@ -9,23 +9,21 @@ version: 1
 projects:
   demo:
     tables:
-      # gaming-analysis, rule 2: project 190 is excluded from the casino table entirely
+      # gaming-analysis: project 190 is excluded from the casino table entirely
       demo.gaming_activity:
         where: ["project != '190'"]
     metrics:
       # ── Casino, game grain (demo.gaming_activity) ──────────────────────────
-      # gaming-analysis, rule 1: project 170 has ALL standard money columns empty -
-      # every money expression substitutes the real-money family
       ggr_games:
         title: "$ GGR"
         synonyms: ["GGR", "gross gaming revenue", "casino revenue"]
         description: "Casino GGR = bets - wins, USD. Game grain (demo.gaming_activity), casino only."
         description_en: "Casino GGR = bets - wins, USD. Game grain (demo.gaming_activity), casino only."
-        caveat: "Casino only (no sportsbook, poker, payments): cross-product totals come from demo.daily. By game or provider: game_provider_full_name is not 1:1 with the game, and the same game_name at different providers can be different games (live tables)."
+        caveat: "Casino only (no sportsbook, poker, payments): cross-product totals come from demo.daily. By game or provider: game_provider is not 1:1 with the game, and the same game_name at different providers can be different games (live tables)."
         table: demo.gaming_activity
         time_column: date
         unit: USD
-        expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)), 2)"
+        expression: "round(sum(casino_ggr_usd), 2)"
         dims: &ga_dims
           date: date
           brand: company
@@ -35,7 +33,7 @@ projects:
           is_vip: is_vip
           game: game_name
           game_type: game_type
-          provider: game_provider_full_name
+          provider: game_provider
         where: &ga_where []
       bets_games:
         title: "$ Bets Sum"
@@ -46,7 +44,7 @@ projects:
         table: demo.gaming_activity
         time_column: date
         unit: USD
-        expression: "round(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 2)"
+        expression: "round(sum(casino_bet_amount_usd), 2)"
         dims: *ga_dims
         where: *ga_where
       wins_games:
@@ -58,7 +56,7 @@ projects:
         table: demo.gaming_activity
         time_column: date
         unit: USD
-        expression: "round(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd)), 2)"
+        expression: "round(sum(casino_win_amount_usd), 2)"
         dims: *ga_dims
         where: *ga_where
       hold_games:
@@ -70,7 +68,7 @@ projects:
         table: demo.gaming_activity
         time_column: date
         unit: "%"
-        expression: "round(toFloat64(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd))) / nullIf(toFloat64(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd))), 0) * 100, 2)"
+        expression: "round(toFloat64(sum(casino_ggr_usd)) / nullIf(toFloat64(sum(casino_bet_amount_usd)), 0) * 100, 2)"
         dims: *ga_dims
         where: *ga_where
       rtp_games:
@@ -82,7 +80,7 @@ projects:
         table: demo.gaming_activity
         time_column: date
         unit: "%"
-        expression: "round(toFloat64(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd))) / nullIf(toFloat64(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd))), 0) * 100, 2)"
+        expression: "round(toFloat64(sum(casino_win_amount_usd)) / nullIf(toFloat64(sum(casino_bet_amount_usd)), 0) * 100, 2)"
         dims: *ga_dims
         where: *ga_where
       active_players_games:
@@ -94,7 +92,7 @@ projects:
         table: demo.gaming_activity
         time_column: date
         unit: count
-        expression: "uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0)"
+        expression: "uniqExactIf(user_id, casino_bet_amount_usd > 0)"
         dims: *ga_dims
         where: *ga_where
       arppu_games:
@@ -106,15 +104,15 @@ projects:
         table: demo.gaming_activity
         time_column: date
         unit: USD
-        expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)) / nullIf(uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0), 0), 2)"
+        expression: "round(sum(casino_ggr_usd) / nullIf(uniqExactIf(user_id, casino_bet_amount_usd > 0), 0), 2)"
         dims: *ga_dims
         where: *ga_where
       # ── Cross-product, brand x day (demo.daily) ────────────────────────────
       # casino_ggr_usd in daily is already adjusted (reconciles with ggr_games)
       casino_ggr:
         title: "$ Casino GGR (daily)"
-        description: "Casino GGR from the daily P&L, USD; adjustments already applied, reconciles with $ GGR."
-        description_en: "Casino GGR from the daily P&L, USD; adjustments already applied, reconciles with $ GGR."
+        description: "Casino GGR from the daily P&L, USD; the excluded project already left out, reconciles with $ GGR."
+        description_en: "Casino GGR from the daily P&L, USD; the excluded project already left out, reconciles with $ GGR."
         table: demo.daily
         time_column: date
         unit: USD

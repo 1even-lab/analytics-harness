@@ -5,7 +5,7 @@ aimed at the traps of the demo data.
 
 | case | catches |
 |---|---|
-| `mandatory-filters` | casino GGR SQL without the real-money substitution or the project exclusion |
+| `mandatory-filters` | casino GGR SQL without the project exclusion, the window or the breakdown |
 | `top-games-grain` | a game top grouped by the provider field, which is not 1:1 with the game |
 | `non-additive` | weekly active players as a sum of daily values |
 | `read-only-refusal` | agrees to delete rows |

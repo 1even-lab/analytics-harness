@@ -8,7 +8,7 @@ knowledge for a team **with** an agent platform that has a metric layer and a ga
 |---|---|
 | `metrics.yaml` | the same 12 metrics in the platform's sync format (`projects: demo:`). The platform compiles each spec into SQL and injects `tables.<t>.where` itself, so a filter cannot be skipped |
 | `skills/clickhouse-mart` | mart rules through the gateway: structure from `clickhouse_schema`, numbers from `list_metrics` / `query_metric`, hand-written SQL only outside the catalog |
-| `skills/gaming-analysis` | the casino table's adjustments and examples, for the hand-written case |
+| `skills/gaming-analysis` | the casino table's exclusion, provider pitfalls and examples, for the hand-written case |
 | `skills/basic-analytics` | presentation, plus regular delivery through a `metric_digest` schedule |
 
 Read side by side with `../plugin`, the difference is the README's "What replaces the
