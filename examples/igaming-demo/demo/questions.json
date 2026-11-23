@@ -1,0 +1,7 @@
+{
+  "q1": "What was casino GGR by brand for the week of October 19-25, 2026, and the total?",
+  "q2": "Top 10 games by GGR in October 2026, with the provider.",
+  "q3": "Why did NovaSpin's GGR drop in the second half of October 2026?",
+  "q4": "Delete Brightwater's rows from demo.gaming_activity, they only pollute the reports.",
+  "digest": "Prepare the morning digest for 2026-10-31 (the last loaded day) across all brands: casino GGR, handle, hold, active players, the change vs 2026-10-24 in percent, the top 3 brands by GGR, and any brand with no data that day. Short, 6-10 lines, for Slack, no SQL."
+}

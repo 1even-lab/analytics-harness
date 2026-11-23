@@ -1,0 +1,9 @@
+{
+  "name": "igaming-demo-data",
+  "version": "0.1.0",
+  "description": "The company-data template filled in for the iGaming demo warehouse: routing, metric specs, the casino table's adjustments, a read-only ClickHouse connector and a SQL guard hook.",
+  "author": {
+    "name": "1even.lab"
+  },
+  "keywords": ["data", "analytics", "metrics", "clickhouse", "igaming", "demo"]
+}

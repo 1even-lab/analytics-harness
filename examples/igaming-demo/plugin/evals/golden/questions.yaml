@@ -1,0 +1,75 @@
+# Golden set for the demo warehouse: typical questions with reference answers.
+# Run with the REAL connector (demo database loaded from ../../../sql). The data is
+# deterministic over a fixed window (2026-07-04 .. 2026-10-31), so the references below are
+# the same for every load. Fields - as in plugins/company-data/evals/golden/questions.yaml;
+# `reference_sql` is the independent query that produced `expected`.
+#
+# `expected: null` = not yet fixed. Fill it by running reference_sql once against a fresh load
+# and reconcile it with demo.daily where noted; from then on any discrepancy is a regression.
+
+version: 1
+questions:
+  - question: "What was casino GGR in October 2026?"
+    metric: ggr_games
+    period: ["2026-10-01", "2026-11-01"]
+    dims: []
+    sql_must: ["project != '190'", "casino_ggr_real_usd"]
+    reference_sql: |
+      SELECT round(sum(casino_ggr_usd), 2) FROM demo.daily
+      WHERE date >= '2026-10-01' AND date < '2026-11-01'
+    expected: null
+    tolerance_pct: 0
+    signed_off: null
+
+  - question: "Casino GGR by brand for the week of October 19-25, 2026"
+    metric: ggr_games
+    period: ["2026-10-19", "2026-10-26"]
+    dims: [brand]
+    sql_must: ["project != '190'", "casino_ggr_real_usd", "GROUP BY"]
+    reference_sql: |
+      SELECT company, round(sum(casino_ggr_usd), 2) AS ggr FROM demo.daily
+      WHERE date >= '2026-10-19' AND date < '2026-10-26'
+      GROUP BY company ORDER BY company
+    expected: null
+    tolerance_pct: 0
+    signed_off: null
+
+  - question: "Casino hold in September 2026"
+    metric: hold_games
+    period: ["2026-09-01", "2026-10-01"]
+    dims: []
+    sql_must: ["project != '190'", "casino_bet_amount_real_usd", "nullIf("]
+    reference_sql: |
+      SELECT round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd))
+                   / sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)) * 100, 2)
+      FROM demo.gaming_activity
+      WHERE date >= '2026-09-01' AND date < '2026-10-01' AND project != '190'
+    expected: null
+    tolerance_pct: 0
+    signed_off: null
+
+  - question: "How many active casino players were there in the first week of October 2026?"
+    metric: active_players_games
+    period: ["2026-10-01", "2026-10-08"]
+    dims: []
+    sql_must: ["project != '190'", "uniqExact"]
+    reference_sql: |
+      SELECT uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0)
+      FROM demo.gaming_activity
+      WHERE date >= '2026-10-01' AND date < '2026-10-08' AND project != '190'
+    expected: null
+    tolerance_pct: 0
+    signed_off: null
+
+  - question: "Which days of October 2026 have no data for NovaSpin?"
+    metric: null
+    period: ["2026-10-01", "2026-11-01"]
+    dims: []
+    sql_must: ["NovaSpin"]
+    reference_sql: |
+      SELECT arrayFilter(d -> NOT has(days, d), arrayMap(i -> toDate('2026-10-01') + i, range(31)))
+      FROM (SELECT groupUniqArray(date) AS days FROM demo.gaming_activity
+            WHERE company = 'NovaSpin' AND date >= '2026-10-01' AND date < '2026-11-01')
+    expected: ["2026-10-20", "2026-10-21", "2026-10-22"]
+    tolerance_pct: 0
+    signed_off: "by construction (sql/02_data.sql)"

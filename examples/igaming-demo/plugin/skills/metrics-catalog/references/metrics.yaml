@@ -1,0 +1,168 @@
+# iGaming demo metric specs - the single source of formulas for agents.
+# Format and compilation into SQL - spec-format.md. A formula change = a PR with review.
+version: 1
+
+tables:
+  # Project 190 must never be part of the casino table's numbers (gaming-activity-analysis, rule 2).
+  demo.gaming_activity:
+    where: ["project != '190'"]
+  # Casino GGR in daily is already adjusted; nothing to exclude.
+  demo.daily:
+    where: []
+
+metrics:
+  # ── demo.gaming_activity - one row per player per day per game ──
+  # Project 170 has only the real-money columns filled (gaming-activity-analysis, rule 1):
+  # every money expression substitutes them.
+  ggr_games:
+    title: "$ GGR"
+    description: "Casino GGR = bets - wins, USD. Game grain, casino only."
+    table: demo.gaming_activity
+    time_column: date
+    unit: USD
+    expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)), 2)"
+    dims: &ga_dims
+      date: date
+      brand: company
+      geo: geo
+      platform: platform
+      traffic_source: traffic_source_grouped
+      is_vip: is_vip
+      game: game_name
+      game_type: game_type
+      provider: game_provider_full_name
+    where: []
+    caveat: "Casino only; cross-product totals come from demo.daily. By provider the numbers are approximate: the provider field is not 1:1 with the game."
+    owner: "demo"
+
+  bets_games:
+    title: "$ Bets Sum"
+    description: "Casino handle (sum of bets), USD."
+    table: demo.gaming_activity
+    time_column: date
+    unit: USD
+    expression: "round(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 2)"
+    dims: *ga_dims
+    where: []
+    caveat: "This is money, not the number of bets: one brand reports no bet counter at all."
+    owner: "demo"
+
+  wins_games:
+    title: "$ Wins Sum"
+    description: "Casino payouts (sum of wins), USD."
+    table: demo.gaming_activity
+    time_column: date
+    unit: USD
+    expression: "round(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd)), 2)"
+    dims: *ga_dims
+    where: []
+    owner: "demo"
+
+  hold_games:
+    title: "% Hold"
+    description: "Casino hold = GGR / handle * 100 over the same rows."
+    table: demo.gaming_activity
+    time_column: date
+    unit: pct
+    expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)) / nullIf(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 0) * 100, 2)"
+    dims: *ga_dims
+    where: []
+    caveat: "A ratio: never summed or averaged across days or rows; a period comparison is two computations."
+    owner: "demo"
+
+  rtp_games:
+    title: "% RTP"
+    description: "Casino return to player = wins / handle * 100 over the same rows."
+    table: demo.gaming_activity
+    time_column: date
+    unit: pct
+    expression: "round(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd)) / nullIf(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 0) * 100, 2)"
+    dims: *ga_dims
+    where: []
+    caveat: "A ratio: never summed or averaged across days or rows; a period comparison is two computations."
+    owner: "demo"
+
+  active_players_games:
+    title: "# Active Players"
+    description: "Distinct players with non-zero casino handle in the period."
+    table: demo.gaming_activity
+    time_column: date
+    unit: users
+    expression: "uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0)"
+    dims: *ga_dims
+    where: []
+    caveat: "Not additive: a week is not the sum of its days. Activity is taken from handle, not from the bet counter."
+    owner: "demo"
+
+  arppu_games:
+    title: "$ ARPPU"
+    description: "Casino GGR per active player in the period, USD."
+    table: demo.gaming_activity
+    time_column: date
+    unit: USD
+    expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)) / nullIf(uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0), 0), 2)"
+    dims:
+      date: date
+      brand: company
+      geo: geo
+    where: []
+    caveat: "A ratio over the whole window; daily values cannot be averaged."
+    owner: "demo"
+
+  # ── demo.daily - one row per brand per day, all products ──
+  casino_ggr:
+    title: "$ Casino GGR (daily)"
+    description: "Casino GGR from the daily P&L, USD; adjustments already applied. Must match $ GGR for the same brands and dates."
+    table: demo.daily
+    time_column: date
+    unit: USD
+    expression: "round(sum(casino_ggr_usd), 2)"
+    dims: &daily_dims
+      date: date
+      brand: company
+    where: []
+    owner: "demo"
+
+  sport_ggr:
+    title: "$ Sport GGR"
+    description: "Sportsbook GGR, USD."
+    table: demo.daily
+    time_column: date
+    unit: USD
+    expression: "round(sum(sport_ggr_usd), 2)"
+    dims: *daily_dims
+    where: []
+    owner: "demo"
+
+  ngr:
+    title: "$ NGR"
+    description: "NGR = GGR of all products minus bonus cost and taxes, USD."
+    table: demo.daily
+    time_column: date
+    unit: USD
+    expression: "round(sum(ngr_usd), 2)"
+    dims: *daily_dims
+    where: []
+    owner: "demo"
+
+  deposits:
+    title: "$ Deposits Sum"
+    description: "Sum of deposits, USD."
+    table: demo.daily
+    time_column: date
+    unit: USD
+    expression: "round(sum(deposits_usd), 2)"
+    dims: *daily_dims
+    where: []
+    owner: "demo"
+
+  registrations:
+    title: "# Registrations"
+    description: "New registrations."
+    table: demo.daily
+    time_column: date
+    unit: count
+    expression: "sum(registrations)"
+    dims: *daily_dims
+    where: []
+    owner: "demo"

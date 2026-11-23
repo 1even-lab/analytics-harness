@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: non-additive
+description: A non-additive metric is not summed across days
+tags: [metrics, analytics]
+execution:
+  max_turns: 15
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: "Daily active players for the week: 1200, 1350, 1100, 1400, 1500, 900, 950. How many active players were there for the week?"

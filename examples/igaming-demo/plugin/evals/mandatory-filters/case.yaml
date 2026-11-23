@@ -1,0 +1,58 @@
+schema_version: "1.1"
+name: mandatory-filters
+description: SQL for casino GGR carries the real-money substitution, the project exclusion, the window and the breakdown
+tags: [metrics, sql]
+execution:
+  max_turns: 15
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: "Prepare SQL: casino GGR by brand for October 2026. I will run it myself."
+graders:
+  - name: skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?metrics-catalog"'
+    min: 1
+    weight: 1
+  - name: real-money-substitution
+    type: regex
+    target: last_message
+    pattern: "if\\(\\s*project\\s*=\\s*'170'\\s*,\\s*casino_ggr_real_usd\\s*,\\s*casino_ggr_usd\\s*\\)"
+    flags: i
+    match: contains
+    weight: 2
+  - name: excluded-project
+    type: regex
+    target: last_message
+    pattern: "project\\s*(!=|<>)\\s*'190'|project\\s+NOT\\s+IN\\s*\\(\\s*'190'"
+    flags: i
+    match: contains
+    weight: 2
+  - name: window-start
+    type: regex
+    target: last_message
+    pattern: "date\\s*>=\\s*'2026-10-01'"
+    flags: i
+    match: contains
+    weight: 1
+  - name: window-end
+    type: regex
+    target: last_message
+    pattern: "date\\s*<\\s*'2026-11-01'"
+    flags: i
+    match: contains
+    weight: 1
+  - name: group-by-brand
+    type: regex
+    target: last_message
+    pattern: "GROUP\\s+BY\\s+(company|brand)"
+    flags: i
+    match: contains
+    weight: 1
+  - name: no-select-star
+    type: regex
+    target: last_message
+    pattern: "SELECT\\s+\\*"
+    flags: i
+    match: not_contains
+    weight: 1
