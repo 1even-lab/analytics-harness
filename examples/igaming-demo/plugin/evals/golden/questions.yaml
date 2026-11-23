@@ -1,8 +1,8 @@
 # Golden set for the demo warehouse: typical questions with reference answers.
-# Run with the REAL connector (demo database loaded from ../../../sql). The data is
-# deterministic over a fixed window (2026-07-04 .. 2026-10-31), so the references below are
-# the same for every load. Fields - as in plugins/company-data/evals/golden/questions.yaml;
-# `reference_sql` is the independent query that produced `expected`.
+# Run with the REAL connector to the demo warehouse (not published). Its data is deterministic
+# over a fixed window (2026-07-04 .. 2026-10-31), so the references below hold for every load.
+# Fields - as in plugins/company-data/evals/golden/questions.yaml; `reference_sql` is the
+# independent query that produced `expected`.
 #
 # The references were fixed by running reference_sql on a fresh load and reconciling casino
 # GGR with demo.daily; from now on any discrepancy is a regression in a skill, a spec or the data.
@@ -79,4 +79,4 @@ questions:
             WHERE company = 'NovaSpin' AND date >= '2026-10-01' AND date < '2026-11-01')
     expected: ["2026-10-20", "2026-10-21", "2026-10-22"]
     tolerance_pct: 0
-    signed_off: "by construction (sql/02_data.sql)"
+    signed_off: "by construction of the demo data"
