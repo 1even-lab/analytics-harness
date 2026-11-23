@@ -45,6 +45,8 @@ stored in `COMMENT`s right in the warehouse metadata; metric definitions live in
    it holds mandatory adjustments.
 3. **Write the query:** only `demo.*`, no `SELECT *`, date filter in `WHERE` before joins,
    `GROUP BY` on specific fields, complex logic via CTEs, division as `a / nullIf(b, 0)`.
+   Money columns are `Decimal(18, 2)`, and in ClickHouse `Decimal / Decimal` keeps two
+   decimals (a hold of 0.0345 comes out as 0.03): divide `toFloat64(a) / nullIf(toFloat64(b), 0)`.
    Top-N: result grain = question grain ("top games" = one row per game); a field that isn't
    1:1 with the key (provider aliases) is a reference column, not a `GROUP BY` key.
 4. **Show the result:** which table you used and why (per its `COMMENT`), period and filters,

@@ -64,7 +64,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: pct
-    expression: "round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)) / nullIf(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 0) * 100, 2)"
+    expression: "round(toFloat64(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd))) / nullIf(toFloat64(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd))), 0) * 100, 2)"
     dims: *ga_dims
     where: []
     caveat: "A ratio: never summed or averaged across days or rows; a period comparison is two computations."
@@ -76,7 +76,7 @@ metrics:
     table: demo.gaming_activity
     time_column: date
     unit: pct
-    expression: "round(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd)) / nullIf(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 0) * 100, 2)"
+    expression: "round(toFloat64(sum(if(project = '170', casino_win_amount_real_usd, casino_win_amount_usd))) / nullIf(toFloat64(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd))), 0) * 100, 2)"
     dims: *ga_dims
     where: []
     caveat: "A ratio: never summed or averaged across days or rows; a period comparison is two computations."

@@ -27,7 +27,7 @@ SELECT
     company,
     round(sum(if(project = '170', casino_ggr_real_usd, casino_ggr_usd)), 2)               AS ggr_usd,
     round(sum(if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd)), 2) AS bet_usd,
-    round(ggr_usd / nullIf(bet_usd, 0) * 100, 2)                                          AS hold_pct,
+    round(toFloat64(ggr_usd) / nullIf(toFloat64(bet_usd), 0) * 100, 2)                                          AS hold_pct,
     uniqExactIf(user_id, if(project = '170', casino_bet_amount_real_usd, casino_bet_amount_usd) > 0) AS active_players
 FROM demo.gaming_activity
 WHERE date >= '2026-10-01'
