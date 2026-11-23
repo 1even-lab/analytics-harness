@@ -22,6 +22,7 @@ plugin/                    the template, filled in - install it like any plugin
     basic-analytics/       how to present an answer
     dashboard/             one-off HTML dashboards
   evals/                   behavioural cases for the demo's traps + a golden set
+with-platform/             the same metrics and rules for an agent platform's metric layer
 ```
 
 ## The data and its traps
