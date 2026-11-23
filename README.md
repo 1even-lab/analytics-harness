@@ -13,7 +13,7 @@ The reasoning behind the layout is in [docs/DESIGN.md](docs/DESIGN.md): the prob
 answers, its two principles and which layer owns what.
 
 A working instance - the template filled in for a ClickHouse warehouse you can load yourself,
-with deterministic demo data, a live demo script and evals against its traps - is in
+with deterministic demo data and evals against its traps - is in
 [examples/igaming-demo](examples/igaming-demo/README.md).
 
 ## What's inside

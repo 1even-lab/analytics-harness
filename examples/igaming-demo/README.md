@@ -4,7 +4,7 @@ The `company-data` template from this repository, filled in for one concrete war
 anyone can load: a fictional casino operator in ClickHouse. Brands, players and numbers are
 generated; the shape of the tables and their pitfalls follow a real casino mart.
 
-Use it to see the template working end to end, to run a live demo, or as a workshop sandbox.
+Use it to see the template working end to end before filling it in for your own warehouse.
 
 ## What is inside
 
@@ -22,8 +22,6 @@ plugin/                    the template, filled in - install it like any plugin
     basic-analytics/       how to present an answer
     dashboard/             one-off HTML dashboards
   evals/                   behavioural cases for the demo's traps + a golden set
-demo/                      a fresh-chat runner, a digest, the demo script and reference queries
-.claude/skills/demo-tour/  the host of the live demo
 ```
 
 ## The data and its traps
@@ -63,17 +61,6 @@ Four traps are built in. The plugin handles them; a chat without it does not.
    ```
    First check: "how many rows are in demo.gaming_activity?". To install it for a team, add
    the plugin to a marketplace the way the root README describes.
-
-## Live demo
-
-- `python3 demo/ask.py q1` - a question in a fresh chat that has the plugin and nothing else;
-  `--bare` - the same question with the same connector and no plugin; `--record` / `--replay`
-  - record a run and fall back to it.
-- `python3 demo/digest.py` - a morning digest into `out/`; posted to Slack only if
-  `SLACK_WEBHOOK_URL` is set in the environment.
-- The whole show: start `claude --plugin-dir plugin` in this folder and say "run the demo"
-  (skill `demo-tour`, script `demo/scenes.md`); "prepare the demo" runs the checks and records
-  fallbacks.
 
 ## Evals
 

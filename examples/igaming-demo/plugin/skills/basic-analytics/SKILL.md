@@ -52,5 +52,5 @@ At most one round, 1-3 questions, only about what is missing:
 | Presentation / slides | skill `pptx` |
 | Excel / CSV / "export" | skill `xlsx` |
 | One-off dashboard / chart in the answer | skill `dashboard` |
-| Regular delivery to a channel | not done by the agent: the demo shows a local scheduled run (`demo/digest.py`); in production - a pipeline from data engineers |
+| Regular delivery to a channel | not done by the agent: suggest a task for data engineers |
 | Table / text | directly in the answer |
