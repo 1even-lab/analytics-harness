@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "clickhouse": {
+      "command": "uvx",
+      "args": ["mcp-clickhouse"],
+      "env": {
+        "CLICKHOUSE_HOST": "${CLICKHOUSE_HOST}",
+        "CLICKHOUSE_PORT": "${CLICKHOUSE_PORT:-8443}",
+        "CLICKHOUSE_USER": "${CLICKHOUSE_USER:-demo_analyst}",
+        "CLICKHOUSE_PASSWORD": "${CLICKHOUSE_PASSWORD}",
+        "CLICKHOUSE_SECURE": "${CLICKHOUSE_SECURE:-true}",
+        "CLICKHOUSE_VERIFY": "${CLICKHOUSE_VERIFY:-true}",
+        "CLICKHOUSE_ALLOW_WRITE_ACCESS": "false",
+        "CLICKHOUSE_ALLOW_DROP": "false"
+      }
+    }
+  }
+}

@@ -1,0 +1,166 @@
+# Metric specs of the demo warehouse for an agent platform's metric layer
+# (the `projects:` wrapper is the platform's sync format; the project key is `demo`).
+#
+# The same metrics as ../plugin/skills/metrics-catalog/references/metrics.yaml. Here the
+# platform compiles them into SQL and injects the table filter itself; there the agent
+# compiles them from text. Ratios divide Float64: Decimal / Decimal keeps two decimals.
+#
+version: 1
+projects:
+  demo:
+    tables:
+      # gaming-analysis: project 190 is excluded from the casino table entirely
+      demo.gaming_activity:
+        where: ["project != '190'"]
+    metrics:
+      # ── Casino, game grain (demo.gaming_activity) ──────────────────────────
+      ggr_games:
+        title: "$ GGR"
+        synonyms: ["GGR", "gross gaming revenue", "casino revenue"]
+        description: "Casino GGR = bets - wins, USD. Game grain (demo.gaming_activity), casino only."
+        description_en: "Casino GGR = bets - wins, USD. Game grain (demo.gaming_activity), casino only."
+        caveat: "Casino only (no sportsbook, poker, payments): cross-product totals come from demo.daily. By game or provider: game_provider is not 1:1 with the game, and the same game_name at different providers can be different games (live tables)."
+        table: demo.gaming_activity
+        time_column: date
+        unit: USD
+        expression: "round(sum(casino_ggr_usd), 2)"
+        dims: &ga_dims
+          date: date
+          brand: company
+          geo: geo
+          platform: platform
+          traffic_source: traffic_source_grouped
+          is_vip: is_vip
+          game: game_name
+          game_type: game_type
+          provider: game_provider
+        where: &ga_where []
+      bets_games:
+        title: "$ Bets Sum"
+        synonyms: ["handle", "turnover", "bets"]
+        description: "Casino handle (sum of bets), USD."
+        description_en: "Casino handle (sum of bets), USD."
+        caveat: "Casino only. Not the number of bets: one brand reports no bet counter at all."
+        table: demo.gaming_activity
+        time_column: date
+        unit: USD
+        expression: "round(sum(casino_bet_amount_usd), 2)"
+        dims: *ga_dims
+        where: *ga_where
+      wins_games:
+        title: "$ Wins Sum"
+        synonyms: ["payouts", "wins"]
+        description: "Casino payouts (sum of wins), USD."
+        description_en: "Casino payouts (sum of wins), USD."
+        caveat: "Casino only."
+        table: demo.gaming_activity
+        time_column: date
+        unit: USD
+        expression: "round(sum(casino_win_amount_usd), 2)"
+        dims: *ga_dims
+        where: *ga_where
+      hold_games:
+        title: "% Hold"
+        synonyms: ["hold", "margin"]
+        description: "Casino hold = GGR / handle * 100 over the same rows."
+        description_en: "Casino hold = GGR / handle * 100 over the same rows."
+        caveat: "A ratio, not a sum: daily values cannot be added or averaged; a period comparison is two calls."
+        table: demo.gaming_activity
+        time_column: date
+        unit: "%"
+        expression: "round(toFloat64(sum(casino_ggr_usd)) / nullIf(toFloat64(sum(casino_bet_amount_usd)), 0) * 100, 2)"
+        dims: *ga_dims
+        where: *ga_where
+      rtp_games:
+        title: "% RTP"
+        synonyms: ["RTP", "return to player"]
+        description: "Casino RTP = wins / handle * 100 over the same rows."
+        description_en: "Casino RTP = wins / handle * 100 over the same rows."
+        caveat: "A ratio, not a sum: daily values cannot be added or averaged; a period comparison is two calls."
+        table: demo.gaming_activity
+        time_column: date
+        unit: "%"
+        expression: "round(toFloat64(sum(casino_win_amount_usd)) / nullIf(toFloat64(sum(casino_bet_amount_usd)), 0) * 100, 2)"
+        dims: *ga_dims
+        where: *ga_where
+      active_players_games:
+        title: "# Active Players"
+        synonyms: ["active players", "actives", "players"]
+        description: "Distinct players with non-zero casino handle in the period."
+        description_en: "Distinct players with non-zero casino handle in the period."
+        caveat: "Not additive: the count for a week is not the sum of daily counts. Activity is taken from handle, not from the bet counter."
+        table: demo.gaming_activity
+        time_column: date
+        unit: count
+        expression: "uniqExactIf(user_id, casino_bet_amount_usd > 0)"
+        dims: *ga_dims
+        where: *ga_where
+      arppu_games:
+        title: "$ ARPPU"
+        synonyms: ["ARPPU", "GGR per player"]
+        description: "Casino GGR per active player in the period, USD."
+        description_en: "Casino GGR per active player in the period, USD."
+        caveat: "A ratio over the whole window; daily values cannot be averaged."
+        table: demo.gaming_activity
+        time_column: date
+        unit: USD
+        expression: "round(sum(casino_ggr_usd) / nullIf(uniqExactIf(user_id, casino_bet_amount_usd > 0), 0), 2)"
+        dims: *ga_dims
+        where: *ga_where
+      # ── Cross-product, brand x day (demo.daily) ────────────────────────────
+      # casino_ggr_usd in daily is already adjusted (reconciles with ggr_games)
+      casino_ggr:
+        title: "$ Casino GGR (daily)"
+        description: "Casino GGR from the daily P&L, USD; the excluded project already left out, reconciles with $ GGR."
+        description_en: "Casino GGR from the daily P&L, USD; the excluded project already left out, reconciles with $ GGR."
+        table: demo.daily
+        time_column: date
+        unit: USD
+        expression: "round(sum(casino_ggr_usd), 2)"
+        dims: &daily_dims
+          date: date
+          brand: company
+        where: &daily_where []
+      sport_ggr:
+        title: "$ Sport GGR"
+        description: "Sportsbook GGR, USD."
+        description_en: "Sportsbook GGR, USD."
+        table: demo.daily
+        time_column: date
+        unit: USD
+        expression: "round(sum(sport_ggr_usd), 2)"
+        dims: *daily_dims
+        where: *daily_where
+      ngr:
+        title: "$ NGR"
+        synonyms: ["NGR", "net gaming revenue"]
+        description: "NGR = GGR of all products minus bonus cost and taxes, USD."
+        description_en: "NGR = GGR of all products minus bonus cost and taxes, USD."
+        table: demo.daily
+        time_column: date
+        unit: USD
+        expression: "round(sum(ngr_usd), 2)"
+        dims: *daily_dims
+        where: *daily_where
+      deposits:
+        title: "$ Deposits Sum"
+        synonyms: ["deposits"]
+        description: "Sum of deposits, USD."
+        description_en: "Sum of deposits, USD."
+        table: demo.daily
+        time_column: date
+        unit: USD
+        expression: "round(sum(deposits_usd), 2)"
+        dims: *daily_dims
+        where: *daily_where
+      registrations:
+        title: "# Registrations"
+        synonyms: ["registrations", "sign-ups", "regs"]
+        description: "New registrations."
+        description_en: "New registrations."
+        table: demo.daily
+        time_column: date
+        unit: count
+        expression: "sum(registrations)"
+        dims: *daily_dims
+        where: *daily_where

@@ -12,6 +12,10 @@ dialect, tables and metrics with your own.
 The reasoning behind the layout is in [docs/DESIGN.md](docs/DESIGN.md): the problems the harness
 answers, its two principles and which layer owns what.
 
+A filled-in instance - the template for a fictional casino warehouse in ClickHouse, with evals
+against its traps and the same knowledge in an agent platform's format - is in
+[examples/igaming-demo](examples/igaming-demo/README.md).
+
 ## What's inside
 
 ```

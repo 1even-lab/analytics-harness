@@ -1,0 +1,30 @@
+schema_version: "1.1"
+name: top-games-grain
+description: A top of games is one row per game; the provider field (not 1:1 with the game) is not a GROUP BY key
+tags: [sql, analytics]
+execution:
+  max_turns: 15
+  timeout_seconds: 180
+  allowed_tools: [Skill, Read, Glob, Grep]
+  prompt: "Prepare SQL: top 10 games by GGR for October 2026 with their provider. I will run it myself."
+graders:
+  - name: domain-skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?gaming-activity-analysis"'
+    min: 1
+    weight: 1
+  - name: group-by-game-only
+    type: regex
+    target: last_message
+    pattern: "GROUP\\s+BY\\s+game_name\\s*(\\n|ORDER|LIMIT|$)"
+    flags: i
+    match: contains
+    weight: 2
+  - name: provider-not-a-key
+    type: regex
+    target: last_message
+    pattern: "GROUP\\s+BY[^\\n]*game_provider"
+    flags: i
+    match: not_contains
+    weight: 2
